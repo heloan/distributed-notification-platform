@@ -206,3 +206,4 @@ All services run as **Docker containers** orchestrated by **Docker Compose**:
 | Minimal API for Gateway | Lightweight, fast, modern .NET pattern |
 | PostgreSQL | Reliable, JSONB support for event payloads |
 | OpenTelemetry | Vendor-neutral observability standard |
+| Jenkins CI/CD | Industry-standard pipeline with declarative syntax, quality gates, and staged deployments |

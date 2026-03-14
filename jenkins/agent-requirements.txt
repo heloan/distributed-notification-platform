@@ -1,0 +1,25 @@
+# =============================================================================
+# Jenkins Agent — Required tool versions
+# =============================================================================
+# This file documents the tools required on Jenkins agents to execute the
+# DSNP pipeline. Use it to provision agents or as a Dockerfile reference.
+# =============================================================================
+
+# -- Runtime / SDKs ----------------------------------------------------------
+dotnet-sdk-8.0          # .NET 8 SDK (build + test gateway & notification service)
+openjdk-21-jdk          # Java 21 JDK (build + test event service)
+python3.10              # Python 3.10+ (integration, robot, selenium tests)
+python3-venv            # Python virtual environment support
+
+# -- Container tools ---------------------------------------------------------
+docker-ce               # Docker Engine (image build + compose)
+docker-compose-plugin   # Docker Compose V2
+
+# -- Browser (Selenium tests) -----------------------------------------------
+chromium-browser        # Headless Chrome for Selenium
+chromium-chromedriver    # ChromeDriver matching Chromium version
+
+# -- Build utilities ---------------------------------------------------------
+git                     # Source control
+curl                    # Health checks
+jq                      # JSON processing in shell scripts

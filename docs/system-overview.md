@@ -260,7 +260,37 @@ cd services/api-gateway-dotnet && dotnet test
 
 ---
 
-## 9. Security Considerations (Future)
+## 9. CI/CD Pipeline
+
+The project uses a **Jenkins Declarative Pipeline** (`Jenkinsfile`) with the following stages:
+
+| # | Stage | Execution | Purpose |
+|---|-------|-----------|---------|
+| 1 | Checkout | Sequential | Clone repo, print environment info |
+| 2 | Static Analysis | Parallel | `dotnet format`, Checkstyle, `flake8` |
+| 3 | Build | Parallel | Compile .NET + Java services |
+| 4 | Unit Tests | Parallel | xUnit + JUnit per service |
+| 5 | Docker Build | Sequential | Multi-stage image builds |
+| 6 | Integration Tests | Parallel | pytest + Robot Framework against Compose infra |
+| 7 | Quality Gate | Sequential | Enforce zero failures, pass-rate thresholds |
+| 8 | Docker Push | Sequential | Push to registry (protected branches only) |
+| 9 | Deploy — Staging | Sequential | Auto-deploy on `develop`/`release/*` |
+| 10 | Deploy — Production | Sequential | Manual approval on `main` |
+
+### Branching Strategy (GitFlow)
+
+| Branch | Build | Tests | Push | Deploy |
+|--------|-------|-------|------|--------|
+| `feat/*` | ✅ | ✅ | ❌ | ❌ |
+| `develop` | ✅ | ✅ | ✅ | Staging |
+| `release/*` | ✅ | ✅ | ✅ | Staging |
+| `main` | ✅ | ✅ | ✅ | Production |
+
+> 📖 Full documentation: [docs/ci-cd-pipeline.md](ci-cd-pipeline.md)
+
+---
+
+## 10. Security Considerations (Future)
 
 | Concern | Approach |
 |---------|----------|
@@ -271,7 +301,7 @@ cd services/api-gateway-dotnet && dotnet test
 
 ---
 
-## 10. Glossary
+## 11. Glossary
 
 | Term | Definition |
 |------|-----------|

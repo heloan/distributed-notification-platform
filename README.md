@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/Kafka-Streaming-231F20?logo=apachekafka&logoColor=white" alt="Kafka" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?logo=jenkins&logoColor=white" alt="Jenkins" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License" />
 </p>
 
@@ -26,6 +27,7 @@
 - [Services](#services)
 - [Tech Stack](#tech-stack)
 - [Repository Structure](#repository-structure)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Getting Started](#getting-started)
 - [API Reference](#api-reference)
 - [Observability](#observability)
@@ -148,6 +150,7 @@ The project demonstrates **senior-level engineering** practices including micros
 | **Database** | PostgreSQL |
 | **Infrastructure** | Docker · Docker Compose |
 | **Observability** | OpenTelemetry · Prometheus · Grafana |
+| **CI/CD** | Jenkins · Declarative Pipeline · Docker |
 | **Architecture** | Clean Architecture · SOLID · DDD |
 
 ---
@@ -204,11 +207,37 @@ distributed-notification-platform/
 │   ├── stop.sh                      # Stop all services
 │   └── build.sh                     # Build all services
 │
+├── Jenkinsfile                      # CI/CD pipeline definition
+├── jenkins/                         # Jenkins agent, helpers, quality gates
+│
 ├── .editorconfig                    # Cross-platform code style
 ├── .gitignore                       # .NET + Java + Infra ignores
 ├── LICENSE                          # MIT License
 └── README.md                        # This file
 ```
+
+---
+
+## CI/CD Pipeline
+
+The project uses a **Jenkins Declarative Pipeline** with 10 stages:
+
+```
+Checkout → Static Analysis → Build → Unit Tests → Docker Build → Integration Tests → Quality Gate → Docker Push → Staging → Production
+```
+
+| Stage | What it does |
+|-------|--------------|
+| **Static Analysis** | `dotnet format`, Checkstyle, `flake8` — parallel across languages |
+| **Build** | Compile .NET + Java services in parallel |
+| **Unit Tests** | xUnit + JUnit — parallel per service, results published to Jenkins |
+| **Docker Build** | Multi-stage images for all implemented services |
+| **Integration Tests** | Spin up infra via Compose → run pytest + Robot Framework in parallel → teardown |
+| **Quality Gate** | Zero unit test failures, ≥ 95% integration pass rate |
+| **Docker Push** | Push to registry on `main`, `develop`, `release/*` branches |
+| **Deploy** | Staging (automatic) · Production (manual approval) |
+
+> 📖 See [docs/ci-cd-pipeline.md](docs/ci-cd-pipeline.md) for the full pipeline documentation.
 
 ---
 
@@ -305,6 +334,7 @@ docker-compose -f infrastructure/docker-compose.yml down
 | [Database Design](docs/database-design.md) | Schema, ER diagrams, table definitions |
 | [UML Diagrams](docs/uml-diagrams.md) | Component, sequence & class diagrams |
 | [Test Suite](tests/README.md) | Testing strategy, tools & runner scripts |
+| [CI/CD Pipeline](docs/ci-cd-pipeline.md) | Jenkins pipeline stages, quality gates & setup |
 
 ---
 
@@ -318,6 +348,7 @@ This project demonstrates:
 - **Clean Architecture** — Domain → Application → Infrastructure dependency rule
 - **SOLID Principles** — Interface-driven design, single responsibility, dependency inversion
 - **Containerization** — Docker Compose for reproducible local environments
+- **CI/CD Pipeline** — Jenkins declarative pipeline with quality gates, parallel stages, and staged deployments
 - **Observability** — OpenTelemetry + Prometheus + Grafana monitoring stack
 
 ---
@@ -331,6 +362,8 @@ This project demonstrates:
 - 🖥️ Web UI dashboard
 - ☸️ Kubernetes deployment manifests
 - 📊 Distributed tracing with Jaeger
+- 📈 SonarQube integration for code quality
+- 🔒 Trivy container image scanning in CI
 
 ---
 

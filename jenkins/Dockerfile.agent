@@ -1,0 +1,58 @@
+# =============================================================================
+# Jenkins Agent — Docker-based build environment
+# Provides all tools needed to run the full DSNP CI/CD pipeline.
+# Usage:
+#   docker build -t dsnp-jenkins-agent jenkins/
+#   Use as agent image in Jenkinsfile or Jenkins cloud configuration
+# =============================================================================
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+
+# -- System packages ---------------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl wget unzip git jq ca-certificates gnupg lsb-release \
+    software-properties-common apt-transport-https \
+    python3 python3-pip python3-venv \
+    chromium-browser chromium-chromedriver \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- .NET 8 SDK --------------------------------------------------------------
+RUN wget https://dot.net/v1/dotnet-install.sh -O /tmp/dotnet-install.sh \
+    && chmod +x /tmp/dotnet-install.sh \
+    && /tmp/dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet \
+    && ln -s /usr/share/dotnet/dotnet /usr/local/bin/dotnet \
+    && rm /tmp/dotnet-install.sh
+
+# -- Java 21 -----------------------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- Docker CLI (for building images inside the agent) -----------------------
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+       https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+       > /etc/apt/sources.list.d/docker.list \
+    && apt-get update && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin \
+    && rm -rf /var/lib/apt/lists/*
+
+# -- Python test tools (pre-install for faster CI) ---------------------------
+RUN python3 -m pip install --no-cache-dir \
+    pytest requests pytest-html pytest-order \
+    robotframework robotframework-requests \
+    robotframework-seleniumlibrary selenium webdriver-manager \
+    flake8
+
+# -- Verify installations ----------------------------------------------------
+RUN dotnet --version && java --version && python3 --version && docker --version
+
+# -- Non-root user -----------------------------------------------------------
+RUN useradd -m -s /bin/bash jenkins
+USER jenkins
+WORKDIR /home/jenkins
+
+ENTRYPOINT ["/bin/bash"]

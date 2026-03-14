@@ -1,0 +1,56 @@
+# =============================================================================
+# Quality Gate Configuration — DSNP CI/CD Pipeline
+# =============================================================================
+# Defines the thresholds that must be met for the build to pass.
+# Used by the "Quality Gate" stage in the Jenkinsfile.
+# =============================================================================
+
+quality_gate:
+  # ---------------------------------------------------------------------------
+  # Unit Tests
+  # ---------------------------------------------------------------------------
+  unit_tests:
+    max_failures: 0           # Zero test failures allowed
+    min_pass_rate: 100        # 100% pass rate required
+
+  # ---------------------------------------------------------------------------
+  # Integration Tests
+  # ---------------------------------------------------------------------------
+  integration_tests:
+    max_failures: 0           # Zero failures on critical paths
+    min_pass_rate: 95         # Allow 5% tolerance for flaky infra tests
+
+  # ---------------------------------------------------------------------------
+  # Code Coverage (future — enable when coverage tools are integrated)
+  # ---------------------------------------------------------------------------
+  # coverage:
+  #   min_line_coverage: 80     # Minimum 80% line coverage
+  #   min_branch_coverage: 70   # Minimum 70% branch coverage
+  #   enforce_on:
+  #     - services/api-gateway-dotnet
+  #     - services/event-service-java
+  #     - services/notification-service-dotnet
+
+  # ---------------------------------------------------------------------------
+  # Static Analysis (future — enable with SonarQube integration)
+  # ---------------------------------------------------------------------------
+  # static_analysis:
+  #   max_critical_issues: 0
+  #   max_major_issues: 5
+  #   max_code_smells: 20
+
+  # ---------------------------------------------------------------------------
+  # Docker Image Size Limits
+  # ---------------------------------------------------------------------------
+  docker_images:
+    max_size_mb:
+      api-gateway: 250
+      event-service: 350
+      notification-service: 250
+
+  # ---------------------------------------------------------------------------
+  # Build Performance
+  # ---------------------------------------------------------------------------
+  build_performance:
+    max_build_time_minutes: 20    # Total pipeline should finish under 20 min
+    max_unit_test_time_minutes: 5 # Unit tests should be fast
