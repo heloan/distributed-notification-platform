@@ -77,20 +77,21 @@ services:
   # ---------------------------------------------------------------------------
   # API Gateway (.NET 8)
   # ---------------------------------------------------------------------------
-  # api-gateway:
-  #   build:
-  #     context: ../services/api-gateway-dotnet
-  #     dockerfile: Dockerfile
-  #   container_name: dsnp-api-gateway
-  #   ports:
-  #     - "5000:8080"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - EventService__BaseUrl=http://event-service:8080
-  #   depends_on:
-  #     - event-service
-  #   networks:
-  #     - dsnp-network
+  api-gateway:
+    build:
+      context: ../services/api-gateway-dotnet
+      dockerfile: Dockerfile
+    container_name: dsnp-api-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - EventService__BaseUrl=http://event-service:8080
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - dsnp-network
 
   # ---------------------------------------------------------------------------
   # Event Service (Java Spring Boot)
