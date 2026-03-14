@@ -159,19 +159,34 @@ distributed-notification-platform/
 │
 ├── services/
 │   ├── api-gateway-dotnet/          # .NET 8 Minimal API Gateway
-│   │   ├── src/
-│   │   ├── tests/
+│   │   ├── src/                     # Clean Architecture layers
+│   │   ├── tests/                   # Unit tests (xUnit)
 │   │   └── Dockerfile
 │   │
 │   ├── event-service-java/          # Java Spring Boot Event Service
 │   │   ├── src/
-│   │   ├── tests/
+│   │   ├── tests/                   # Unit tests (JUnit)
 │   │   └── Dockerfile
 │   │
 │   └── notification-service-dotnet/ # .NET 8 Worker Notification Service
 │       ├── src/
-│       ├── tests/
+│       ├── tests/                   # Unit tests (xUnit)
 │       └── Dockerfile
+│
+├── tests/                           # ← Black-box tests (service-agnostic)
+│   ├── integration/                 # Python + pytest HTTP tests
+│   │   ├── gateway/                 # API Gateway integration tests
+│   │   ├── event-service/           # Event Service integration tests
+│   │   ├── notification-service/    # Notification Service integration tests
+│   │   └── end-to-end/             # Full pipeline E2E tests
+│   ├── robot/                       # Robot Framework API automation
+│   │   ├── gateway/
+│   │   ├── event-service/
+│   │   └── end-to-end/
+│   ├── selenium/                    # Browser UI tests (Swagger, Grafana)
+│   ├── manual/                      # Manual test case documentation
+│   ├── scripts/                     # Test runner scripts
+│   └── docker-compose.test.yml      # Isolated test infrastructure
 │
 ├── infrastructure/
 │   ├── docker-compose.yml           # Full local environment
@@ -289,6 +304,7 @@ docker-compose -f infrastructure/docker-compose.yml down
 | [System Overview](docs/system-overview.md) | Functional specification & workflows |
 | [Database Design](docs/database-design.md) | Schema, ER diagrams, table definitions |
 | [UML Diagrams](docs/uml-diagrams.md) | Component, sequence & class diagrams |
+| [Test Suite](tests/README.md) | Testing strategy, tools & runner scripts |
 
 ---
 

@@ -218,17 +218,44 @@ Notification persisted with status
 - Unknown event type → notification skipped, logged
 - Duplicate event → idempotent processing
 
-### 8.4 Running Tests
+### 8.4 Test Structure
+
+```
+tests/                              # Root-level black-box tests
+├── integration/                    # pytest + requests
+│   ├── gateway/                    # API Gateway tests
+│   ├── event-service/              # Event Service tests
+│   ├── notification-service/       # Notification Service tests
+│   └── end-to-end/                # Full pipeline tests
+├── robot/                          # Robot Framework
+│   ├── gateway/
+│   ├── event-service/
+│   └── end-to-end/
+├── selenium/                       # Browser tests
+├── manual/                         # Manual test cases
+├── scripts/                        # Runner scripts
+└── docker-compose.test.yml         # Test infrastructure
+
+services/*/tests/                   # Unit tests (inside each service)
+```
+
+> **Architecture decision:** Unit tests live inside each service because they are coupled to implementation. Black-box tests (integration, robot, selenium, manual) live at the root `/tests/` directory because they test services through HTTP, independent of implementation language.
+
+### 8.5 Running Tests
 
 ```bash
-# All tests for a service
-cd services/api-gateway-dotnet
-./scripts/run-tests.sh
+# All black-box tests
+./tests/scripts/run-all-tests.sh
 
 # Individual suites
-./scripts/run-integration-tests.sh    # Python pytest
-./scripts/run-robot-tests.sh          # Robot Framework
-./scripts/run-selenium-tests.sh       # Selenium browser
+./tests/scripts/run-integration-tests.sh          # Python pytest
+./tests/scripts/run-integration-tests.sh -m gateway  # Gateway only
+./tests/scripts/run-robot-tests.sh                # Robot Framework
+./tests/scripts/run-selenium-tests.sh             # Selenium browser
+./tests/scripts/run-e2e-tests.sh                  # End-to-end only
+
+# Unit tests (per service)
+cd services/api-gateway-dotnet && dotnet test
 ```
 
 ---

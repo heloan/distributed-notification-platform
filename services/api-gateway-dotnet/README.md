@@ -81,42 +81,15 @@ api-gateway-dotnet/
 │       └── DependencyInjection.cs     # Infrastructure DI registration
 │
 ├── tests/
-│   ├── Gateway.Api.Tests/             # .NET Unit & integration tests (xUnit)
-│   │   ├── Validators/
-│   │   │   └── EventRequestValidatorTests.cs
-│   │   ├── HttpClients/
-│   │   │   └── EventServiceClientTests.cs
-│   │   ├── Endpoints/
-│   │   │   └── EventEndpointTests.cs
-│   │   └── Middleware/
-│   │       └── ExceptionHandlingMiddlewareTests.cs
-│   │
-│   ├── integration/                   # Python integration tests (pytest)
-│   │   ├── conftest.py                # Shared fixtures & config
-│   │   ├── test_health.py             # Health endpoint tests
-│   │   ├── test_events_validation.py  # Input validation tests
-│   │   ├── test_events_forwarding.py  # Downstream forwarding tests
-│   │   ├── test_observability.py      # Metrics & Swagger tests
-│   │   ├── test_swagger_ui_selenium.py # Selenium browser tests
-│   │   ├── pytest.ini                 # pytest configuration
-│   │   └── requirements.txt           # Python dependencies
-│   │
-│   ├── robot/                         # Robot Framework automated tests
-│   │   └── tests/
-│   │       ├── health_tests.robot
-│   │       ├── event_validation_tests.robot
-│   │       ├── event_forwarding_tests.robot
-│   │       ├── observability_tests.robot
-│   │       └── swagger_ui_tests.robot  # Selenium UI tests
-│   │
-│   └── manual/
-│       └── manual-test-cases.md       # 15 manual test procedures
-│
-├── scripts/
-│   ├── run-tests.sh                   # Run all test suites
-│   ├── run-integration-tests.sh       # Python integration only
-│   ├── run-robot-tests.sh             # Robot Framework only
-│   └── run-selenium-tests.sh          # Selenium browser only
+│   └── Gateway.Api.Tests/             # .NET Unit tests (xUnit)
+│       ├── Validators/
+│       │   └── EventRequestValidatorTests.cs
+│       ├── HttpClients/
+│       │   └── EventServiceClientTests.cs
+│       ├── Endpoints/
+│       │   └── EventEndpointTests.cs
+│       └── Middleware/
+│           └── ExceptionHandlingMiddlewareTests.cs
 │
 ├── ApiGateway.sln                     # Solution file
 ├── Dockerfile                         # Multi-stage Docker build
@@ -150,52 +123,37 @@ dotnet run --project src/Gateway.Api
 
 ## Testing Strategy
 
-The API Gateway has a **multi-layered testing approach** covering unit, integration, API automation, and browser testing.
+The API Gateway uses a **multi-layered testing approach**:
 
-| Layer | Tool | Test Count | Scope |
-|-------|------|-----------|-------|
-| **Unit Tests** | xUnit + Moq + FluentAssertions | 10+ | Validators, HTTP clients, middleware, endpoints |
-| **Integration Tests** | Python + pytest + requests | 20+ | Live API validation, forwarding, observability |
-| **API Automation** | Robot Framework + RequestsLibrary | 20+ | End-to-end API endpoint automation |
-| **Browser Tests** | Selenium (Python + Robot) | 8+ | Swagger UI rendering and interaction |
-| **Manual Tests** | Documented procedures | 15 | Step-by-step test cases with checklist |
+| Layer | Tool | Location | Scope |
+|-------|------|----------|-------|
+| **Unit Tests** | xUnit + Moq + FluentAssertions | `tests/Gateway.Api.Tests/` (this service) | Validators, HTTP clients, middleware, endpoints |
+| **Integration Tests** | Python + pytest + requests | `tests/integration/gateway/` (root) | Live API validation, forwarding, observability |
+| **API Automation** | Robot Framework + RequestsLibrary | `tests/robot/gateway/` (root) | Keyword-driven API endpoint automation |
+| **Browser Tests** | Selenium + pytest | `tests/selenium/` (root) | Swagger UI rendering and interaction |
+| **Manual Tests** | Documented procedures | `tests/manual/gateway-test-cases.md` (root) | Step-by-step test cases |
 
-### Run All Tests
+> **Architecture decision:** Unit tests stay inside this service. All black-box tests (integration, robot, selenium, manual) live in the root `/tests/` directory — see [tests/README.md](../../tests/README.md).
+
+### Run Unit Tests
 
 ```bash
 cd services/api-gateway-dotnet
-./scripts/run-tests.sh
+dotnet test
 ```
 
-### Run Individual Test Suites
+### Run Black-Box Tests (from project root)
 
 ```bash
-# .NET Unit Tests (xUnit)
-dotnet test
+# Gateway integration tests
+./tests/scripts/run-integration-tests.sh -m gateway
 
-# Python Integration Tests (pytest)
-./scripts/run-integration-tests.sh
+# Gateway robot tests
+./tests/scripts/run-robot-tests.sh --include gateway
 
-# Robot Framework API Tests
-./scripts/run-robot-tests.sh
-
-# Selenium Browser Tests (Swagger UI)
-./scripts/run-selenium-tests.sh
+# All black-box tests
+./tests/scripts/run-all-tests.sh
 ```
-
-### Test Reports
-
-| Suite | Report Location |
-|-------|----------------|
-| pytest | `tests/integration/reports/pytest-report.html` |
-| Robot Framework | `tests/robot/reports/report.html` |
-| Selenium | `tests/robot/reports/selenium/report.html` |
-
-### Prerequisites for Tests
-
-- **API Gateway running** on `http://localhost:5000`
-- **Python 3.10+** (for integration and Robot tests)
-- **Chrome/Chromium** (for Selenium browser tests)
 
 ## Status
 
