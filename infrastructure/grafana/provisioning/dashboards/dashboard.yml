@@ -1,0 +1,16 @@
+# =============================================================================
+# Grafana — Dashboard Provisioning
+# =============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: "DSNP Dashboards"
+    orgId: 1
+    folder: "DSNP"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
+      foldersFromFilesStructure: false

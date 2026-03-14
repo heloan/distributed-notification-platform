@@ -1,0 +1,84 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Events Processed Total",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "events_processed_total",
+          "legendFormat": "Events"
+        }
+      ]
+    },
+    {
+      "title": "Notifications Sent Total",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "notifications_sent_total",
+          "legendFormat": "Notifications"
+        }
+      ]
+    },
+    {
+      "title": "Notification Failures",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "expr": "notification_failures_total",
+          "legendFormat": "Failures"
+        }
+      ]
+    },
+    {
+      "title": "Event Processing Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "expr": "rate(events_processed_total[5m])",
+          "legendFormat": "Events/sec"
+        }
+      ]
+    },
+    {
+      "title": "Notification Processing Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "expr": "notification_processing_time",
+          "legendFormat": "Processing Time (ms)"
+        }
+      ]
+    },
+    {
+      "title": "Notifications by Channel",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "targets": [
+        {
+          "expr": "notifications_sent_total",
+          "legendFormat": "{{channel}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dsnp", "notifications", "events"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "DSNP — Notification Platform",
+  "uid": "dsnp-overview"
+}

@@ -1,0 +1,191 @@
+# Distributed Smart Notification Platform
+# Docker Compose — Full Local Development Environment
+# =============================================================================
+# Usage:
+#   docker-compose up -d          Start all services
+#   docker-compose down           Stop all services
+#   docker-compose logs -f        Follow logs
+# =============================================================================
+
+version: "3.9"
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: dsnp-postgres
+    environment:
+      POSTGRES_DB: dsnp
+      POSTGRES_USER: dsnp_user
+      POSTGRES_PASSWORD: dsnp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dsnp_user -d dsnp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # Zookeeper (Kafka dependency)
+  # ---------------------------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: dsnp-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # Apache Kafka
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: dsnp-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # API Gateway (.NET 8)
+  # ---------------------------------------------------------------------------
+  # api-gateway:
+  #   build:
+  #     context: ../services/api-gateway-dotnet
+  #     dockerfile: Dockerfile
+  #   container_name: dsnp-api-gateway
+  #   ports:
+  #     - "5000:8080"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - EventService__BaseUrl=http://event-service:8080
+  #   depends_on:
+  #     - event-service
+  #   networks:
+  #     - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # Event Service (Java Spring Boot)
+  # ---------------------------------------------------------------------------
+  # event-service:
+  #   build:
+  #     context: ../services/event-service-java
+  #     dockerfile: Dockerfile
+  #   container_name: dsnp-event-service
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dsnp
+  #     - SPRING_DATASOURCE_USERNAME=dsnp_user
+  #     - SPRING_DATASOURCE_PASSWORD=dsnp_password
+  #     - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #   networks:
+  #     - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # Notification Service (.NET Worker)
+  # ---------------------------------------------------------------------------
+  # notification-service:
+  #   build:
+  #     context: ../services/notification-service-dotnet
+  #     dockerfile: Dockerfile
+  #   container_name: dsnp-notification-service
+  #   environment:
+  #     - DOTNET_ENVIRONMENT=Development
+  #     - Kafka__BootstrapServers=kafka:29092
+  #     - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=dsnp;Username=dsnp_user;Password=dsnp_password
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #   networks:
+  #     - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # Prometheus — Metrics Collection
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: dsnp-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    networks:
+      - dsnp-network
+
+  # ---------------------------------------------------------------------------
+  # Grafana — Dashboards & Visualization
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: dsnp-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - dsnp-network
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  dsnp-network:
+    driver: bridge
+    name: dsnp-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
