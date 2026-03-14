@@ -96,25 +96,25 @@ services:
   # ---------------------------------------------------------------------------
   # Event Service (Java Spring Boot)
   # ---------------------------------------------------------------------------
-  # event-service:
-  #   build:
-  #     context: ../services/event-service-java
-  #     dockerfile: Dockerfile
-  #   container_name: dsnp-event-service
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dsnp
-  #     - SPRING_DATASOURCE_USERNAME=dsnp_user
-  #     - SPRING_DATASOURCE_PASSWORD=dsnp_password
-  #     - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     kafka:
-  #       condition: service_healthy
-  #   networks:
-  #     - dsnp-network
+  event-service:
+    build:
+      context: ../services/event-service-java
+      dockerfile: Dockerfile
+    container_name: dsnp-event-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dsnp
+      - SPRING_DATASOURCE_USERNAME=dsnp_user
+      - SPRING_DATASOURCE_PASSWORD=dsnp_password
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dsnp-network
 
   # ---------------------------------------------------------------------------
   # Notification Service (.NET Worker)

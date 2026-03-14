@@ -20,11 +20,11 @@ scrape_configs:
     static_configs:
       - targets: ["api-gateway:8080"]
 
-  # Event Service (Java Spring Boot) — uncomment when service is ready
-  # - job_name: "event-service"
-  #   metrics_path: /actuator/prometheus
-  #   static_configs:
-  #     - targets: ["event-service:8080"]
+  # Event Service (Java Spring Boot)
+  - job_name: "event-service"
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["event-service:8080"]
 
   # Notification Service (.NET) — uncomment when service is ready
   # - job_name: "notification-service"

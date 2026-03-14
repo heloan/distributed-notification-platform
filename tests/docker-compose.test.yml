@@ -72,22 +72,22 @@ services:
   #     postgres-test:
   #       condition: service_healthy
 
-  # event-service-test:
-  #   build:
-  #     context: ../services/event-service-java
-  #     dockerfile: Dockerfile
-  #   container_name: dsnp-event-service-test
-  #   environment:
-  #     SPRING_PROFILES_ACTIVE: test
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-test:5432/dsnp_test
-  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-test:29093
-  #   ports:
-  #     - "8081:8080"
-  #   depends_on:
-  #     postgres-test:
-  #       condition: service_healthy
-  #     kafka-test:
-  #       condition: service_healthy
+  event-service-test:
+    build:
+      context: ../services/event-service-java
+      dockerfile: Dockerfile
+    container_name: dsnp-event-service-test
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-test:5432/dsnp_test
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-test:29093
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
 
   # notification-service-test:
   #   build:

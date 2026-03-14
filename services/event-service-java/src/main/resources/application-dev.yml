@@ -1,0 +1,15 @@
+# =============================================================================
+# Event Service — Development Profile
+# =============================================================================
+
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    com.dsnp.eventservice: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

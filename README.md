@@ -124,11 +124,11 @@ The project demonstrates **senior-level engineering** practices including micros
 
 ## Services
 
-| Service | Technology | Responsibility |
-|---------|-----------|---------------|
-| **API Gateway** | .NET 8 Minimal API | Entry point · Request validation · Routing |
-| **Event Service** | Java 21 · Spring Boot | Receive events · Persist · Publish to Kafka |
-| **Notification Service** | .NET 8 Worker Service | Consume events · Apply rules · Send notifications |
+| Service | Technology | Responsibility | Status |
+|---------|-----------|---------------|--------|
+| **API Gateway** | .NET 8 Minimal API | Entry point · Request validation · Routing | ✅ Implemented |
+| **Event Service** | Java 21 · Spring Boot | Receive events · Persist · Publish to Kafka | ✅ Implemented |
+| **Notification Service** | .NET 8 Worker Service | Consume events · Apply rules · Send notifications | 🔲 Planned |
 
 ### Event Types
 
@@ -166,9 +166,9 @@ distributed-notification-platform/
 │   │   ├── tests/                   # Unit tests (xUnit)
 │   │   └── Dockerfile
 │   │
-│   ├── event-service-java/          # Java Spring Boot Event Service
-│   │   ├── src/
-│   │   ├── tests/                   # Unit tests (JUnit)
+│   ├── event-service-java/          # Java 21 Spring Boot Event Service ✅
+│   │   ├── src/main/java/.../       # Clean Architecture (domain → app → infra → api)
+│   │   ├── src/test/java/.../       # Unit tests (JUnit 5 + Mockito)
 │   │   └── Dockerfile
 │   │
 │   └── notification-service-dotnet/ # .NET 8 Worker Notification Service

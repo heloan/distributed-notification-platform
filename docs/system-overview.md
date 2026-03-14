@@ -106,6 +106,32 @@ A **distributed, event-driven platform** where:
 - Persist event to PostgreSQL
 - Publish event to Kafka topic `events`
 
+**Architecture:** Clean Architecture with Hexagonal Ports & Adapters.
+
+```
+Domain
+  ├── Entity (Event — rich domain model)
+  ├── Enums (EventType)
+  ├── Events (EventCreatedDomainEvent)
+  ├── Exceptions (EventNotFoundException, EventValidationException)
+  └── Repository port (EventRepository)
+
+Application
+  ├── DTOs (CreateEventRequest, EventResponse, ErrorResponse)
+  ├── Mapper (EventMapper)
+  ├── Output Port (EventPublisher)
+  └── Use Cases (CreateEvent, GetEventById, GetAllEvents)
+
+Infrastructure
+  ├── Persistence (EventJpaEntity, JpaEventRepositoryAdapter)
+  ├── Messaging (KafkaEventPublisher)
+  └── Config (Jackson, Kafka, OpenAPI)
+
+API
+  ├── Controller (EventController)
+  └── Exception (GlobalExceptionHandler)
+```
+
 ### 5.3 Notification Service (.NET 8 Worker)
 
 **Purpose:** Event consumption, rule evaluation, and notification dispatch.

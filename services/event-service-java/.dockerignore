@@ -1,0 +1,16 @@
+# Docker ignore — Event Service
+target/
+*.class
+*.jar
+!target/*.jar
+.idea/
+*.iml
+*.iws
+*.ipr
+.mvn/wrapper/maven-wrapper.jar
+.git
+.gitignore
+README.md
+*.md
+logs/
+*.log

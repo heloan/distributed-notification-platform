@@ -1,0 +1,81 @@
+# =============================================================================
+# Event Service — Application Configuration
+# =============================================================================
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: event-service
+
+  # -- Database (PostgreSQL) -------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dsnp
+    username: dsnp_user
+    password: dsnp_password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  # -- JPA / Hibernate -------------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Use init.sql for schema — don't auto-create
+    show-sql: false
+    open-in-view: false           # Best practice: disable OSIV
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # -- Kafka Producer --------------------------------------------------------
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all                    # Wait for all replicas
+      retries: 3
+      properties:
+        enable.idempotence: true   # Exactly-once semantics
+
+# -- Custom application properties -------------------------------------------
+app:
+  kafka:
+    topic: events
+    partitions: 3
+    replication-factor: 1
+
+# -- Actuator & Observability ------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# -- OpenAPI / Swagger -------------------------------------------------------
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+# -- Logging -----------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com.dsnp.eventservice: INFO
+    org.springframework.kafka: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"

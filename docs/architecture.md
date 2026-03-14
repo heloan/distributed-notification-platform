@@ -123,7 +123,7 @@ Different services use the best technology for their needs:
 
 ### 4. Clean Architecture
 
-The Notification Service follows **Clean Architecture** with strict dependency rules:
+Both the **Event Service** (Java) and the **Notification Service** (.NET) follow **Clean Architecture** with strict dependency rules:
 
 ```
 ┌─────────────────────────────────────────┐
