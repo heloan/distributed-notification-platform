@@ -154,6 +154,21 @@ $RECYCLE.BIN/
 *.pem
 *.key
 
+## Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.egg-info/
+
+## Test reports & artifacts
+**/reports/
+**/output.xml
+**/log.html
+**/report.html
+**/selenium-screenshot-*.png
+
 ## Temporary files
 tmp/
 temp/

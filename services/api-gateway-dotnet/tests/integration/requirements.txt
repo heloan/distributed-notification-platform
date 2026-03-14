@@ -1,0 +1,22 @@
+# =============================================================================
+# API Gateway — Python Test Dependencies
+# Integration Tests (pytest) + Automated Tests (Robot Framework + Selenium)
+# =============================================================================
+
+# Integration tests
+pytest==8.1.1
+requests==2.31.0
+pytest-html==4.1.1
+pytest-order==1.2.0
+
+# Robot Framework — API automation
+robotframework==7.0
+robotframework-requests==0.9.6
+
+# Robot Framework — Selenium / Browser automation
+robotframework-seleniumlibrary==6.2.0
+selenium==4.18.1
+webdriver-manager==4.0.1
+
+# Utilities
+python-dotenv==1.0.1

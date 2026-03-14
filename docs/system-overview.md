@@ -172,19 +172,64 @@ Notification persisted with status
 
 ## 8. Testing Strategy
 
-| Layer | Type | Scope |
-|-------|------|-------|
-| Domain | Unit Tests | Notification rules, entity behavior |
-| Application | Unit Tests | Use cases, rule engine logic |
-| Infrastructure | Integration Tests | Kafka consumer, database operations |
-| System | End-to-End Tests | Full event → notification flow |
+### 8.1 Testing Layers
 
-**Example test scenarios:**
+| Layer | Tool | Language | Scope |
+|-------|------|----------|-------|
+| **Unit Tests** | xUnit / JUnit | C# / Java | Domain rules, validators, services |
+| **Integration Tests** | pytest + requests | Python | Live API endpoints, service communication |
+| **API Automation** | Robot Framework | Robot / Python | End-to-end API automation with keywords |
+| **Browser Tests** | Selenium (SeleniumLibrary) | Python / Robot | Swagger UI validation, page rendering |
+| **Manual Tests** | Documented procedures | Markdown | Step-by-step test cases with checklist |
 
+### 8.2 Test Tools & Frameworks
+
+| Tool | Purpose |
+|------|---------|
+| **xUnit + Moq + FluentAssertions** | .NET unit & integration tests |
+| **JUnit + Mockito** | Java unit & integration tests |
+| **pytest + requests** | Python HTTP integration tests |
+| **Robot Framework + RequestsLibrary** | Keyword-driven API test automation |
+| **Selenium + SeleniumLibrary** | Browser-based UI testing |
+| **pytest-html** | HTML test reports for pytest |
+| **Robot Framework reports** | Built-in HTML/XML reporting |
+
+### 8.3 Example Test Scenarios
+
+**Validation Tests:**
+- Invalid event type → `400 Bad Request` with error details
+- Empty email → `400 Bad Request`
+- Future timestamp → `400 Bad Request`
+- Multiple invalid fields → all errors returned at once
+
+**Forwarding Tests:**
+- `USER_REGISTERED` event → `202 Accepted` (Event Service up)
+- Valid event → `502 Bad Gateway` (Event Service down)
+- Non-existent event ID → `404 Not Found`
+
+**Observability Tests:**
+- `/metrics` → Prometheus-format metrics returned
+- `/swagger/v1/swagger.json` → valid OpenAPI spec
+- Swagger UI → page renders with all endpoints visible
+
+**End-to-End Tests:**
 - `USER_REGISTERED` event → email notification created and sent
 - `PAYMENT_FAILED` event → Slack alert dispatched
 - Unknown event type → notification skipped, logged
 - Duplicate event → idempotent processing
+
+### 8.4 Running Tests
+
+```bash
+# All tests for a service
+cd services/api-gateway-dotnet
+./scripts/run-tests.sh
+
+# Individual suites
+./scripts/run-integration-tests.sh    # Python pytest
+./scripts/run-robot-tests.sh          # Robot Framework
+./scripts/run-selenium-tests.sh       # Selenium browser
+```
 
 ---
 
