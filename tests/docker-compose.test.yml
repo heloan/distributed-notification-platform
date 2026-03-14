@@ -89,15 +89,17 @@ services:
       kafka-test:
         condition: service_healthy
 
-  # notification-service-test:
-  #   build:
-  #     context: ../services/notification-service-dotnet
-  #     dockerfile: Dockerfile
-  #   container_name: dsnp-notification-test
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: Testing
-  #     Kafka__BootstrapServers: kafka-test:29093
-  #     ConnectionStrings__DefaultConnection: Host=postgres-test;Database=dsnp_test;Username=dsnp;Password=dsnp_test_pass
-  #   depends_on:
-  #     kafka-test:
-  #       condition: service_healthy
+  notification-service-test:
+    build:
+      context: ../services/notification-service-dotnet
+      dockerfile: Dockerfile
+    container_name: dsnp-notification-test
+    environment:
+      ASPNETCORE_ENVIRONMENT: Testing
+      Kafka__BootstrapServers: kafka-test:29093
+      ConnectionStrings__DefaultConnection: Host=postgres-test;Database=dsnp_test;Username=dsnp;Password=dsnp_test_pass
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy

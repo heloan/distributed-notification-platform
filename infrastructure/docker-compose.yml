@@ -119,22 +119,22 @@ services:
   # ---------------------------------------------------------------------------
   # Notification Service (.NET Worker)
   # ---------------------------------------------------------------------------
-  # notification-service:
-  #   build:
-  #     context: ../services/notification-service-dotnet
-  #     dockerfile: Dockerfile
-  #   container_name: dsnp-notification-service
-  #   environment:
-  #     - DOTNET_ENVIRONMENT=Development
-  #     - Kafka__BootstrapServers=kafka:29092
-  #     - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=dsnp;Username=dsnp_user;Password=dsnp_password
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     kafka:
-  #       condition: service_healthy
-  #   networks:
-  #     - dsnp-network
+  notification-service:
+    build:
+      context: ../services/notification-service-dotnet
+      dockerfile: Dockerfile
+    container_name: dsnp-notification-service
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - Kafka__BootstrapServers=kafka:29092
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=dsnp;Username=dsnp_user;Password=dsnp_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dsnp-network
 
   # ---------------------------------------------------------------------------
   # Prometheus — Metrics Collection
