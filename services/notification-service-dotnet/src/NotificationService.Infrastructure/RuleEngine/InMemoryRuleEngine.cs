@@ -21,7 +21,7 @@ public sealed class InMemoryRuleEngine : IRuleEngine
 
         [EventType.PaymentFailed] = new NotificationRule(
             EventType.PaymentFailed,
-            new[] { ChannelType.Slack },
+            new[] { ChannelType.Sms },
             "⚠️ Payment processing failed. Please review the transaction details."),
 
         [EventType.OrderShipped] = new NotificationRule(
@@ -31,7 +31,7 @@ public sealed class InMemoryRuleEngine : IRuleEngine
 
         [EventType.SecurityAlert] = new NotificationRule(
             EventType.SecurityAlert,
-            new[] { ChannelType.Email, ChannelType.Slack },
+            new[] { ChannelType.Email, ChannelType.Slack, ChannelType.Push },
             "🔒 Security alert: Suspicious activity detected on your account. Please verify your recent actions.")
     };
 

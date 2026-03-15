@@ -15,6 +15,7 @@ public static class NotificationMapper
         new(
             Id: notification.Id,
             EventId: notification.EventId,
+            UserId: notification.UserId,
             Channel: notification.Channel.ToString().ToUpperInvariant(),
             Recipient: notification.Recipient,
             Status: notification.Status.ToString().ToUpperInvariant(),

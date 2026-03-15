@@ -11,7 +11,7 @@ spring:
 
   # -- Database (PostgreSQL) -------------------------------------------------
   datasource:
-    url: jdbc:postgresql://localhost:5432/dsnp
+    url: jdbc:postgresql://localhost:5432/dsnp?stringtype=unspecified
     username: dsnp_user
     password: dsnp_password
     driver-class-name: org.postgresql.Driver

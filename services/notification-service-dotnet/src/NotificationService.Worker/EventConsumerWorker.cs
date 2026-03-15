@@ -34,6 +34,10 @@ public sealed class EventConsumerWorker : BackgroundService
     {
         _logger.LogInformation("EventConsumerWorker started");
 
+        // Yield to allow the host (Kestrel) to complete startup before
+        // entering the blocking Kafka consume loop.
+        await Task.Yield();
+
         await _consumer.ConsumeAsync(async (message, ct) =>
         {
             _logger.LogInformation(

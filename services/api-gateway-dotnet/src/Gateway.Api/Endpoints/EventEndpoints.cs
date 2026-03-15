@@ -16,7 +16,7 @@ public static class EventEndpoints
     /// </summary>
     public static void MapEventEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/events")
+        var group = app.MapGroup("/api/events")
             .WithTags("Events")
             .WithOpenApi();
 
@@ -86,7 +86,7 @@ public static class EventEndpoints
             request.EventType,
             response.Id);
 
-        return Results.Accepted($"/events/{response.Id}", response);
+        return Results.Accepted($"/api/events/{response.Id}", response);
     }
 
     /// <summary>

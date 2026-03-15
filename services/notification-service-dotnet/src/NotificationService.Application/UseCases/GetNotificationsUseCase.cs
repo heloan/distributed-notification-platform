@@ -45,4 +45,15 @@ public sealed class GetNotificationsUseCase
         var notifications = await _repository.GetByEventIdAsync(eventId, cancellationToken);
         return notifications.Select(NotificationMapper.ToResponse).ToList();
     }
+
+    /// <summary>
+    /// Retrieves all notifications for a specific user.
+    /// </summary>
+    public async Task<IReadOnlyList<NotificationResponse>> GetByUserIdAsync(
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        var notifications = await _repository.GetByUserIdAsync(userId, cancellationToken);
+        return notifications.Select(NotificationMapper.ToResponse).ToList();
+    }
 }

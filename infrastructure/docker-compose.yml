@@ -1,13 +1,11 @@
 # Distributed Smart Notification Platform
 # Docker Compose — Full Local Development Environment
 # =============================================================================
-# Usage:
-#   docker-compose up -d          Start all services
-#   docker-compose down           Stop all services
-#   docker-compose logs -f        Follow logs
+# Usage (use "docker compose" NOT "docker-compose"):
+#   docker compose up -d          Start all services
+#   docker compose down           Stop all services
+#   docker compose logs -f        Follow logs
 # =============================================================================
-
-version: "3.9"
 
 services:
 
@@ -22,7 +20,7 @@ services:
       POSTGRES_USER: dsnp_user
       POSTGRES_PASSWORD: dsnp_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -44,7 +42,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - "2181:2181"
+      - "2182:2181"
     networks:
       - dsnp-network
 
@@ -59,13 +57,14 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     ports:
-      - "9092:9092"
+      - "9093:9092"
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 15s
@@ -104,7 +103,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dsnp
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dsnp?stringtype=unspecified
       - SPRING_DATASOURCE_USERNAME=dsnp_user
       - SPRING_DATASOURCE_PASSWORD=dsnp_password
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
@@ -124,8 +123,12 @@ services:
       context: ../services/notification-service-dotnet
       dockerfile: Dockerfile
     container_name: dsnp-notification-service
+    ports:
+      - "5001:8080"
     environment:
       - DOTNET_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Serilog__MinimumLevel__Override__Microsoft=Information
       - Kafka__BootstrapServers=kafka:29092
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=dsnp;Username=dsnp_user;Password=dsnp_password
     depends_on:

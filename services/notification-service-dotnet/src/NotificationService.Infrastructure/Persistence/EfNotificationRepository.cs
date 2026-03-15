@@ -57,4 +57,14 @@ public sealed class EfNotificationRepository : INotificationRepository
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<Notification>> GetByUserIdAsync(
+        string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Notifications
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }

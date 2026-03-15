@@ -8,6 +8,7 @@ namespace NotificationService.Application.DTOs;
 public sealed record NotificationResponse(
     Guid Id,
     Guid EventId,
+    string UserId,
     string Channel,
     string Recipient,
     string Status,

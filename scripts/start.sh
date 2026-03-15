@@ -15,7 +15,7 @@ echo ""
 
 # Start infrastructure first
 echo "📦 Starting infrastructure (PostgreSQL, Kafka, Zookeeper, Prometheus, Grafana)..."
-docker-compose -f "$INFRA_DIR/docker-compose.yml" up -d
+docker compose -f "$INFRA_DIR/docker-compose.yml" up -d
 
 echo ""
 echo "✅ All services started!"

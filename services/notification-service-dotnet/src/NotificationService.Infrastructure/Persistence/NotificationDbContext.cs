@@ -36,6 +36,10 @@ public sealed class NotificationDbContext : DbContext
                 .HasColumnName("event_id")
                 .IsRequired();
 
+            entity.Property(n => n.UserId)
+                .HasColumnName("user_id")
+                .HasMaxLength(255);
+
             entity.Property(n => n.Channel)
                 .HasColumnName("channel")
                 .HasMaxLength(50)
@@ -71,6 +75,7 @@ public sealed class NotificationDbContext : DbContext
             entity.HasIndex(n => n.EventId).HasDatabaseName("idx_notifications_event_id");
             entity.HasIndex(n => n.Status).HasDatabaseName("idx_notifications_status");
             entity.HasIndex(n => n.Channel).HasDatabaseName("idx_notifications_channel");
+            entity.HasIndex(n => n.UserId).HasDatabaseName("idx_notifications_user_id");
         });
     }
 }

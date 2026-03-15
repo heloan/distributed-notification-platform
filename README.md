@@ -257,7 +257,7 @@ git clone https://github.com/heloan-marinho/distributed-notification-platform.gi
 cd distributed-notification-platform
 
 # Start all services
-docker-compose -f infrastructure/docker-compose.yml up -d
+docker compose -f infrastructure/docker-compose.yml up -d
 
 # Or use the convenience script
 ./scripts/start.sh

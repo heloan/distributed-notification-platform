@@ -22,7 +22,7 @@ class TestHealthEndpoints:
         response = api_session.get(f"{gateway_url}/health")
         body = response.json()
         assert "status" in body
-        assert body["status"] == "healthy"
+        assert body["status"].lower() == "healthy"
 
     def test_health_ready_returns_200(self, api_session, gateway_url):
         """GET /health/ready should return 200 OK when all dependencies are up."""

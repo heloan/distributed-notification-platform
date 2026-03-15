@@ -1,3 +1,4 @@
+using NotificationService.Application.UseCases;
 using NotificationService.Infrastructure;
 using NotificationService.Worker;
 using Serilog;
@@ -14,12 +15,16 @@ try
 {
     Log.Information("Starting DSNP Notification Service");
 
-    var builder = Host.CreateDefaultBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(8080);
+    });
 
     // ---------------------------------------------------------------------------
     // Configure Serilog
     // ---------------------------------------------------------------------------
-    builder.UseSerilog((context, services, configuration) =>
+    builder.Host.UseSerilog((context, services, configuration) =>
         configuration
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
@@ -31,44 +36,43 @@ try
     // ---------------------------------------------------------------------------
     // Configure Services
     // ---------------------------------------------------------------------------
-    builder.ConfigureServices((context, services) =>
-    {
-        // Infrastructure layer (Kafka, EF Core, Providers, Rules)
-        services.AddInfrastructure(context.Configuration);
+    // Infrastructure layer (Kafka, EF Core, Providers, Rules)
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-        // Application layer (Use Cases)
-        services.AddApplicationServices();
+    // Application layer (Use Cases)
+    builder.Services.AddApplicationServices();
 
-        // Hosted services
-        services.AddHostedService<EventConsumerWorker>();
+    // Hosted services (Kafka consumer)
+    builder.Services.AddHostedService<EventConsumerWorker>();
 
-        // Health check endpoint (minimal Kestrel for /health and /metrics)
-        services.AddHealthChecks();
-    });
+    // Health checks
+    builder.Services.AddHealthChecks();
 
     // ---------------------------------------------------------------------------
-    // Add minimal web host for health & metrics endpoints
+    // Build & Configure Pipeline
     // ---------------------------------------------------------------------------
-    builder.ConfigureWebHostDefaults(webBuilder =>
-    {
-        webBuilder.Configure(app =>
-        {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHealthChecks("/health");
-                endpoints.MapGet("/metrics", () => Results.Ok(new { status = "healthy" }));
-            });
-        });
+    var app = builder.Build();
 
-        webBuilder.UseUrls("http://+:8080");
+    Log.Information("DSNP Notification Service built, mapping endpoints...");
+
+    app.MapHealthChecks("/health");
+    app.MapGet("/metrics", () => Results.Ok(new { status = "healthy" }));
+
+    // --- Notification query API ---
+    app.MapGet("/api/notifications", async (HttpContext context, GetNotificationsUseCase useCase) =>
+    {
+        var userId = context.Request.Query["userId"].FirstOrDefault();
+
+        var notifications = string.IsNullOrWhiteSpace(userId)
+            ? await useCase.GetAllAsync(context.RequestAborted)
+            : await useCase.GetByUserIdAsync(userId, context.RequestAborted);
+
+        return Results.Ok(notifications);
     });
 
-    var host = builder.Build();
+    Log.Information("DSNP Notification Service is running on http://+:8080");
 
-    Log.Information("DSNP Notification Service is running");
-
-    await host.RunAsync();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {

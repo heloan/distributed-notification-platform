@@ -24,12 +24,30 @@ public static class HealthEndpoints
             .WithOpenApi()
             .Produces<HealthResponse>(StatusCodes.Status200OK)
             .Produces<HealthResponse>(StatusCodes.Status503ServiceUnavailable);
+
+        app.MapGet("/health/live", GetLiveness)
+            .WithName("LivenessCheck")
+            .WithTags("Health")
+            .WithSummary("Liveness probe — always returns 200 if the process is running")
+            .WithOpenApi()
+            .Produces<HealthResponse>(StatusCodes.Status200OK);
     }
 
     /// <summary>
     /// GET /health — Basic liveness check.
     /// </summary>
     private static IResult GetHealth()
+    {
+        return Results.Ok(new HealthResponse(
+            Status: "Healthy",
+            Service: "API Gateway",
+            Timestamp: DateTime.UtcNow));
+    }
+
+    /// <summary>
+    /// GET /health/live — Liveness probe.
+    /// </summary>
+    private static IResult GetLiveness()
     {
         return Results.Ok(new HealthResponse(
             Status: "Healthy",

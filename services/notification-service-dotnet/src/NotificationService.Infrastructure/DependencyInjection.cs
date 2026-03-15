@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddSingleton<INotificationSender, EmailProvider>();
         services.AddSingleton<INotificationSender, SlackProvider>();
         services.AddSingleton<INotificationSender, SmsProvider>();
+        services.AddSingleton<INotificationSender, PushProvider>();
 
         return services;
     }

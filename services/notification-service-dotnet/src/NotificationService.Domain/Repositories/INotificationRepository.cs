@@ -22,4 +22,7 @@ public interface INotificationRepository
 
     /// <summary>Retrieves all notifications, most recent first.</summary>
     Task<IReadOnlyList<Notification>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Retrieves all notifications for a given user.</summary>
+    Task<IReadOnlyList<Notification>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
 }

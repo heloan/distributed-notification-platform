@@ -29,7 +29,7 @@ public sealed class EventServiceClient : IEventService
             request.EventType,
             request.UserId);
 
-        var response = await _httpClient.PostAsJsonAsync("/events", request, cancellationToken);
+        var response = await _httpClient.PostAsJsonAsync("/api/events", request, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -61,7 +61,7 @@ public sealed class EventServiceClient : IEventService
     {
         _logger.LogInformation("Retrieving all events from Event Service");
 
-        var response = await _httpClient.GetAsync("/events", cancellationToken);
+        var response = await _httpClient.GetAsync("/api/events", cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -87,7 +87,7 @@ public sealed class EventServiceClient : IEventService
     {
         _logger.LogInformation("Retrieving event {EventId} from Event Service", id);
 
-        var response = await _httpClient.GetAsync($"/events/{id}", cancellationToken);
+        var response = await _httpClient.GetAsync($"/api/events/{id}", cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {

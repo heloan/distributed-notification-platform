@@ -1,7 +1,7 @@
-# =============================================================================
-# Distributed Smart Notification Platform
-# Database Initialization Script
-# =============================================================================
+-- =============================================================================
+-- Distributed Smart Notification Platform
+-- Database Initialization Script
+-- =============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -26,6 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_events_user_id    ON events (user_id);
 CREATE TABLE IF NOT EXISTS notifications (
     id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id    UUID            NOT NULL REFERENCES events(id),
+    user_id     VARCHAR(255),
     channel     VARCHAR(50)     NOT NULL,
     recipient   VARCHAR(255)    NOT NULL,
     status      VARCHAR(50)     NOT NULL DEFAULT 'PENDING',
@@ -37,3 +38,4 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notifications_event_id ON notifications (event_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_status   ON notifications (status);
 CREATE INDEX IF NOT EXISTS idx_notifications_channel  ON notifications (channel);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id  ON notifications (user_id);

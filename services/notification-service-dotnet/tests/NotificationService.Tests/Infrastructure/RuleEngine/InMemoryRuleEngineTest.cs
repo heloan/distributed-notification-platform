@@ -13,7 +13,7 @@ public sealed class InMemoryRuleEngineTest
 
     [Theory]
     [InlineData(EventType.UserRegistered, new[] { ChannelType.Email })]
-    [InlineData(EventType.PaymentFailed, new[] { ChannelType.Slack })]
+    [InlineData(EventType.PaymentFailed, new[] { ChannelType.Sms })]
     [InlineData(EventType.OrderShipped, new[] { ChannelType.Sms })]
     public void Evaluate_ShouldReturnCorrectRule_ForKnownEventType(
         EventType eventType, ChannelType[] expectedChannels)
@@ -36,8 +36,9 @@ public sealed class InMemoryRuleEngineTest
 
         // Assert
         rule.Should().NotBeNull();
-        rule!.Channels.Should().HaveCount(2);
+        rule!.Channels.Should().HaveCount(3);
         rule.Channels.Should().Contain(ChannelType.Email);
         rule.Channels.Should().Contain(ChannelType.Slack);
+        rule.Channels.Should().Contain(ChannelType.Push);
     }
 }

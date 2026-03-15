@@ -81,7 +81,8 @@ public sealed class ProcessEventUseCase
                 eventId: eventId,
                 channel: channel,
                 recipient: recipient,
-                message: rule.MessageTemplate);
+                message: rule.MessageTemplate,
+                userId: message.UserId);
 
             await _repository.AddAsync(notification, cancellationToken);
 

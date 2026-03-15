@@ -18,6 +18,9 @@ public sealed class Notification
     /// <summary>Foreign key — the event that triggered this notification.</summary>
     public Guid EventId { get; private set; }
 
+    /// <summary>The user this notification is for.</summary>
+    public string UserId { get; private set; } = string.Empty;
+
     /// <summary>Delivery channel (Email, Slack, SMS).</summary>
     public ChannelType Channel { get; private set; }
 
@@ -47,7 +50,8 @@ public sealed class Notification
         Guid eventId,
         ChannelType channel,
         string recipient,
-        string message)
+        string message,
+        string userId = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(recipient, nameof(recipient));
         ArgumentException.ThrowIfNullOrWhiteSpace(message, nameof(message));
@@ -56,6 +60,7 @@ public sealed class Notification
         {
             Id = Guid.NewGuid(),
             EventId = eventId,
+            UserId = userId ?? string.Empty,
             Channel = channel,
             Recipient = recipient,
             Status = NotificationStatus.Pending,

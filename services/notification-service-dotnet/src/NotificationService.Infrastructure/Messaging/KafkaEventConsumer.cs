@@ -64,9 +64,10 @@ public sealed class KafkaEventConsumer : IEventConsumer
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                ConsumeResult<string, string>? result = null;
                 try
                 {
-                    var result = consumer.Consume(cancellationToken);
+                    result = consumer.Consume(cancellationToken);
                     if (result?.Message?.Value is null) continue;
 
                     _logger.LogDebug(
@@ -86,6 +87,20 @@ public sealed class KafkaEventConsumer : IEventConsumer
                 catch (ConsumeException ex)
                 {
                     _logger.LogError(ex, "Error consuming Kafka message");
+                }
+                catch (OperationCanceledException)
+                {
+                    throw; // Let the outer catch handle graceful shutdown
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing message — skipping");
+                    // Commit offset so the poison message is not reprocessed
+                    if (result is not null)
+                    {
+                        try { consumer.Commit(result); }
+                        catch (KafkaException ke) { _logger.LogWarning(ke, "Failed to commit offset after handler error"); }
+                    }
                 }
             }
         }

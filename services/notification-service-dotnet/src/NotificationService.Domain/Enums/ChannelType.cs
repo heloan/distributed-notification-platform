@@ -12,5 +12,8 @@ public enum ChannelType
     Slack,
 
     /// <summary>SMS text message.</summary>
-    Sms
+    Sms,
+
+    /// <summary>Push notification.</summary>
+    Push
 }
