@@ -31,7 +31,20 @@ public sealed class EventServiceClient : IEventService
 
         var response = await _httpClient.PostAsJsonAsync("/events", request, cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "Event Service returned {StatusCode} for event {EventType}. Response: {ErrorBody}",
+                (int)response.StatusCode,
+                request.EventType,
+                errorBody);
+
+            throw new HttpRequestException(
+                $"Event Service returned {(int)response.StatusCode}: {errorBody}",
+                inner: null,
+                statusCode: response.StatusCode);
+        }
 
         var result = await response.Content.ReadFromJsonAsync<EventResponse>(cancellationToken);
 
@@ -50,7 +63,19 @@ public sealed class EventServiceClient : IEventService
 
         var response = await _httpClient.GetAsync("/events", cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "Event Service returned {StatusCode} when retrieving events. Response: {ErrorBody}",
+                (int)response.StatusCode,
+                errorBody);
+
+            throw new HttpRequestException(
+                $"Event Service returned {(int)response.StatusCode}: {errorBody}",
+                inner: null,
+                statusCode: response.StatusCode);
+        }
 
         var result = await response.Content.ReadFromJsonAsync<IEnumerable<EventResponse>>(cancellationToken);
 
@@ -70,7 +95,20 @@ public sealed class EventServiceClient : IEventService
             return null;
         }
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "Event Service returned {StatusCode} for event {EventId}. Response: {ErrorBody}",
+                (int)response.StatusCode,
+                id,
+                errorBody);
+
+            throw new HttpRequestException(
+                $"Event Service returned {(int)response.StatusCode}: {errorBody}",
+                inner: null,
+                statusCode: response.StatusCode);
+        }
 
         return await response.Content.ReadFromJsonAsync<EventResponse>(cancellationToken);
     }

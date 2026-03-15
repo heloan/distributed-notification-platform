@@ -28,16 +28,33 @@ public sealed class RequestLoggingMiddleware
             context.Request.Path,
             requestId);
 
-        await _next(context);
+        try
+        {
+            await _next(context);
 
-        stopwatch.Stop();
+            stopwatch.Stop();
 
-        _logger.LogInformation(
-            "← {Method} {Path} | Status: {StatusCode} | Duration: {Duration}ms | RequestId: {RequestId}",
-            context.Request.Method,
-            context.Request.Path,
-            context.Response.StatusCode,
-            stopwatch.ElapsedMilliseconds,
-            requestId);
+            _logger.LogInformation(
+                "← {Method} {Path} | Status: {StatusCode} | Duration: {Duration}ms | RequestId: {RequestId}",
+                context.Request.Method,
+                context.Request.Path,
+                context.Response.StatusCode,
+                stopwatch.ElapsedMilliseconds,
+                requestId);
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+
+            _logger.LogError(
+                ex,
+                "← {Method} {Path} | FAILED | Duration: {Duration}ms | RequestId: {RequestId}",
+                context.Request.Method,
+                context.Request.Path,
+                stopwatch.ElapsedMilliseconds,
+                requestId);
+
+            throw;
+        }
     }
 }

@@ -19,15 +19,13 @@ pipeline {
     // Environment — shared across all stages
     // -------------------------------------------------------------------------
     environment {
-        // Container registry
-        DOCKER_REGISTRY     = credentials('docker-registry-url')
-        DOCKER_CREDENTIALS  = credentials('docker-registry-credentials')
-        IMAGE_TAG            = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+        // Image tag (branch-buildNumber or local-buildNumber)
+        IMAGE_TAG            = "${env.BRANCH_NAME ?: 'local'}-${env.BUILD_NUMBER}"
 
-        // Service image names
-        GATEWAY_IMAGE       = "${DOCKER_REGISTRY}/dsnp/api-gateway"
-        EVENT_SERVICE_IMAGE  = "${DOCKER_REGISTRY}/dsnp/event-service"
-        NOTIFICATION_IMAGE   = "${DOCKER_REGISTRY}/dsnp/notification-service"
+        // Service image names (registry prefix added in Docker Push stage)
+        GATEWAY_IMAGE        = 'dsnp/api-gateway'
+        EVENT_SERVICE_IMAGE  = 'dsnp/event-service'
+        NOTIFICATION_IMAGE   = 'dsnp/notification-service'
 
         // Tool versions
         DOTNET_VERSION      = '8.0'
@@ -57,7 +55,7 @@ pipeline {
     // -------------------------------------------------------------------------
     parameters {
         booleanParam(name: 'SKIP_INTEGRATION_TESTS', defaultValue: false, description: 'Skip integration/E2E tests')
-        booleanParam(name: 'SKIP_DOCKER_PUSH',       defaultValue: false, description: 'Skip Docker image push')
+        booleanParam(name: 'SKIP_DOCKER_PUSH',       defaultValue: true,  description: 'Skip Docker image push (enable when registry credentials are configured)')
         booleanParam(name: 'DEPLOY_STAGING',          defaultValue: false, description: 'Deploy to staging after build')
         choice(name: 'LOG_LEVEL', choices: ['INFO', 'DEBUG', 'WARN'], description: 'Pipeline log verbosity')
     }
@@ -193,21 +191,15 @@ pipeline {
         // ---------------------------------------------------------------------
         stage('Docker Build') {
             steps {
-                script {
-                    // API Gateway
-                    docker.build("${GATEWAY_IMAGE}:${IMAGE_TAG}", "services/api-gateway-dotnet")
-                    docker.build("${GATEWAY_IMAGE}:latest",       "services/api-gateway-dotnet")
+                sh "docker build -t ${GATEWAY_IMAGE}:${IMAGE_TAG} -t ${GATEWAY_IMAGE}:latest services/api-gateway-dotnet"
 
-                    // Event Service (when available)
+                script {
                     if (fileExists('services/event-service-java/Dockerfile')) {
-                        docker.build("${EVENT_SERVICE_IMAGE}:${IMAGE_TAG}", "services/event-service-java")
-                        docker.build("${EVENT_SERVICE_IMAGE}:latest",       "services/event-service-java")
+                        sh "docker build -t ${EVENT_SERVICE_IMAGE}:${IMAGE_TAG} -t ${EVENT_SERVICE_IMAGE}:latest services/event-service-java"
                     }
 
-                    // Notification Service (when available)
                     if (fileExists('services/notification-service-dotnet/Dockerfile')) {
-                        docker.build("${NOTIFICATION_IMAGE}:${IMAGE_TAG}", "services/notification-service-dotnet")
-                        docker.build("${NOTIFICATION_IMAGE}:latest",       "services/notification-service-dotnet")
+                        sh "docker build -t ${NOTIFICATION_IMAGE}:${IMAGE_TAG} -t ${NOTIFICATION_IMAGE}:latest services/notification-service-dotnet"
                     }
                 }
             }
@@ -360,21 +352,41 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
-                        sh "docker push ${GATEWAY_IMAGE}:${IMAGE_TAG}"
-                        sh "docker push ${GATEWAY_IMAGE}:latest"
+                withCredentials([
+                    string(credentialsId: 'docker-registry-url', variable: 'DOCKER_REGISTRY'),
+                    usernamePassword(credentialsId: 'docker-registry-credentials',
+                                     usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')
+                ]) {
+                    sh 'echo "$REG_PASS" | docker login "$DOCKER_REGISTRY" -u "$REG_USER" --password-stdin'
 
+                    sh """
+                        docker tag ${GATEWAY_IMAGE}:${IMAGE_TAG} \$DOCKER_REGISTRY/${GATEWAY_IMAGE}:${IMAGE_TAG}
+                        docker tag ${GATEWAY_IMAGE}:latest        \$DOCKER_REGISTRY/${GATEWAY_IMAGE}:latest
+                        docker push \$DOCKER_REGISTRY/${GATEWAY_IMAGE}:${IMAGE_TAG}
+                        docker push \$DOCKER_REGISTRY/${GATEWAY_IMAGE}:latest
+                    """
+
+                    script {
                         if (fileExists('services/event-service-java/Dockerfile')) {
-                            sh "docker push ${EVENT_SERVICE_IMAGE}:${IMAGE_TAG}"
-                            sh "docker push ${EVENT_SERVICE_IMAGE}:latest"
+                            sh """
+                                docker tag ${EVENT_SERVICE_IMAGE}:${IMAGE_TAG} \$DOCKER_REGISTRY/${EVENT_SERVICE_IMAGE}:${IMAGE_TAG}
+                                docker tag ${EVENT_SERVICE_IMAGE}:latest        \$DOCKER_REGISTRY/${EVENT_SERVICE_IMAGE}:latest
+                                docker push \$DOCKER_REGISTRY/${EVENT_SERVICE_IMAGE}:${IMAGE_TAG}
+                                docker push \$DOCKER_REGISTRY/${EVENT_SERVICE_IMAGE}:latest
+                            """
                         }
 
                         if (fileExists('services/notification-service-dotnet/Dockerfile')) {
-                            sh "docker push ${NOTIFICATION_IMAGE}:${IMAGE_TAG}"
-                            sh "docker push ${NOTIFICATION_IMAGE}:latest"
+                            sh """
+                                docker tag ${NOTIFICATION_IMAGE}:${IMAGE_TAG} \$DOCKER_REGISTRY/${NOTIFICATION_IMAGE}:${IMAGE_TAG}
+                                docker tag ${NOTIFICATION_IMAGE}:latest        \$DOCKER_REGISTRY/${NOTIFICATION_IMAGE}:latest
+                                docker push \$DOCKER_REGISTRY/${NOTIFICATION_IMAGE}:${IMAGE_TAG}
+                                docker push \$DOCKER_REGISTRY/${NOTIFICATION_IMAGE}:latest
+                            """
                         }
                     }
+
+                    sh 'docker logout "$DOCKER_REGISTRY"'
                 }
             }
         }

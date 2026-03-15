@@ -1,0 +1,53 @@
+# =============================================================================
+# Jenkins Controller — Full CI/CD environment for DSNP
+# =============================================================================
+# Extends the official Jenkins LTS image with all tools needed to run the
+# DSNP pipeline: Docker CLI, .NET 8 SDK, Python 3, and Java 21 (built-in).
+#
+# Usage (standalone):
+#   docker build -t dsnp-jenkins -f jenkins/Dockerfile.controller jenkins/
+#
+# Usage (via docker-compose):
+#   Automatically built by infrastructure/docker-compose.yml
+# =============================================================================
+
+FROM jenkins/jenkins:lts-jdk21
+
+USER root
+
+# -- Docker CLI & Compose (build/run containers via host socket) --------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates curl gnupg lsb-release && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | \
+        gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+        > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin && \
+    rm -rf /var/lib/apt/lists/*
+
+# -- .NET 8 SDK ---------------------------------------------------------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libicu-dev && \
+    curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh && \
+    chmod +x /tmp/dotnet-install.sh && \
+    /tmp/dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet && \
+    ln -s /usr/share/dotnet/dotnet /usr/local/bin/dotnet && \
+    rm /tmp/dotnet-install.sh && \
+    rm -rf /var/lib/apt/lists/*
+
+# -- Python 3 + pip (for pytest / Robot Framework) ----------------------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 python3-pip python3-venv && \
+    rm -rf /var/lib/apt/lists/*
+
+# -- Docker socket access -----------------------------------------------------
+RUN groupadd -f docker && usermod -aG docker jenkins
+
+USER jenkins
+
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+ENV DOTNET_NOLOGO=1

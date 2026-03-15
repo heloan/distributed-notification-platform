@@ -172,6 +172,25 @@ services:
     networks:
       - dsnp-network
 
+  # ---------------------------------------------------------------------------
+  # Jenkins — CI/CD Server
+  # ---------------------------------------------------------------------------
+  jenkins:
+    build:
+      context: ../jenkins
+      dockerfile: Dockerfile.controller
+    container_name: dsnp-jenkins
+    ports:
+      - "8082:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=true
+    networks:
+      - dsnp-network
+
 # =============================================================================
 # Networks
 # =============================================================================
@@ -189,4 +208,6 @@ volumes:
   prometheus-data:
     driver: local
   grafana-data:
+    driver: local
+  jenkins-data:
     driver: local

@@ -9,6 +9,9 @@
 FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 
+# Install curl (required by Maven wrapper to download Maven)
+RUN apk add --no-cache curl
+
 # Copy Maven wrapper and POM first (layer caching for dependency download)
 COPY pom.xml .
 COPY .mvn/ .mvn/

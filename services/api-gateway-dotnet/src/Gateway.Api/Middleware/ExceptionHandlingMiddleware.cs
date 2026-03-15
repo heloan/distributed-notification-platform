@@ -31,10 +31,19 @@ public sealed class ExceptionHandlingMiddleware
         {
             _logger.LogError(ex, "Downstream service communication error");
 
+            var statusCode = ex.StatusCode switch
+            {
+                System.Net.HttpStatusCode.ServiceUnavailable => StatusCodes.Status503ServiceUnavailable,
+                System.Net.HttpStatusCode.GatewayTimeout => StatusCodes.Status504GatewayTimeout,
+                _ => StatusCodes.Status502BadGateway
+            };
+
             await WriteErrorResponse(context, new ErrorResponse(
-                Title: "Bad Gateway",
-                Status: StatusCodes.Status502BadGateway,
-                Detail: "The downstream service is currently unavailable. Please try again later."));
+                Title: statusCode == StatusCodes.Status503ServiceUnavailable
+                    ? "Service Unavailable"
+                    : "Bad Gateway",
+                Status: statusCode,
+                Detail: $"The downstream service returned an error: {ex.Message}"));
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
