@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/assets/logo-placeholder.png" alt="DSNP Logo" width="120" />
-</p>
-
 <h1 align="center">Distributed Smart Notification Platform</h1>
 
 <p align="center">
